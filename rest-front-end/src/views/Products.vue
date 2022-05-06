@@ -1,7 +1,8 @@
 <template>
   <div>
+    <button @click="dsa">asdas</button>
     <h1>Products</h1>
-    <input type="text" v-model="searchString" @input="pushQueryToUrl({search: searchString})">
+    <input type="text" v-model="searchString" @input="pushQueryToUrl({search: searchString})" />
     <div v-for="c in categories.data" :key="c.id">
       <button @click="pushQueryToUrl({categoryId: c.id})">{{ c.title }}</button>
     </div>
@@ -13,9 +14,14 @@
     <div v-for="p in products.data" :key="p.id">
       <p>{{ p.title }}</p>
       <p>{{ p.price }}</p>
+      <p>{{ p.spec }}</p>
     </div>
     <div v-for="i in products?.meta?.pagination?.pageCount" :key="i">
       <button @click="pushQueryToUrl({page: i})">{{ i }}</button>
+    </div>
+    <div>
+       <input type="checkbox" name="Wifi 6"  @change="pushQueryToUrl({spec: $event.target.value})">
+
     </div>
   </div>
 </template>
@@ -35,6 +41,7 @@ export default {
     const router = useRouter();
     const sort = ref(route.query.sort || "updatedAt:desc");
     const searchString = ref('')
+    const spec = ref()
     let ezQuery = {};
     function asd(event) {
       pushQueryToUrl({ sort: event.target.value });
@@ -56,12 +63,14 @@ export default {
         lte: route.query.lte,
         sort: route.query.sort,
         categoryId: route.query.categoryId,
+        spec: route.query.spec ? route.query.spec.split(',').map(s => s.split(':')) : undefined,
         search: route.query.search != '' || route.query.search ? route.query.search : undefined
       }
       const pagination = {page: route.query.page || 1, pageSize: 5};
       const populate = ["category"];
       const sort = route.query.sort ? [route.query.sort] : ["updatedAt:desc"];
       const search = route.query.search != '' && route.query.search ? route.query.search : undefined
+      const spec = route.query.spec
       const filters = {
           $and: [
             {
@@ -83,25 +92,36 @@ export default {
             },
             {
               title: {
-                $containsi: search,
+                $startsWith: search,
               }
-            }
+            },
           ],
         };
+      if (ezQuery.spec) {
+        ezQuery.spec.map(s => {
+          filters.$and.push({
+            spec: {
+              $containsi: `"${s[0]}":${s[1]}`
+            }
+          })
+        })
+      }
+     
+      
       const query = {
         populate,
         pagination,
         sort,
         filters,
-        search,
       }
       await eCommerceStore.fetchCategories();
       await eCommerceStore.fetchProducts(query);
+      console.log(filters);
     }
     watchEffect(() => {      
       createProductQuery();
     });
-    onMounted(() => {});
+    onMounted(() => {});    
     return {
       products,
       eCommerceStore,
