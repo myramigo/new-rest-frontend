@@ -12,4 +12,11 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans&display=swap');
+
+div {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+}
+</style>
