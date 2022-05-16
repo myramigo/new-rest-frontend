@@ -24,7 +24,7 @@ export const useECommerceStore = defineStore({
       this.products = data
     },
     async fetchProduct(id) {
-      const { data } = await axios.get(`/api/products/${id}`)
+      const { data } = await axios.get(`/api/products/${id}?populate=images`)
       this.product = data
     },
     async fetchCategories() {
